@@ -1,0 +1,20 @@
+{
+  "name": "aoc-ts",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "tsnd --respawn",
+    "start11": "tsnd --respawn day01/1"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.11"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  }
+}
