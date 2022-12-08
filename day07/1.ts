@@ -1,4 +1,3 @@
-import { inspect } from 'util'
 import { sum, getDemoInput, getInput } from '../utils'
 
 interface Dir {

@@ -1,4 +1,3 @@
-import { inspect } from 'util'
 import { sum, getDemoInput, getInput, compareNumber } from '../utils'
 import { parseInput, getAllDirs, getDirSize } from './1'
 
