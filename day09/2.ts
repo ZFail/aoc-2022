@@ -29,7 +29,9 @@ const moveHead = (head: Coordinate, dir: Dir): Coordinate => {
 const moveTail = (head: Coordinate, tail: Coordinate): Coordinate => {
   const diff: Coordinate = [head[0] - tail[0], head[1] - tail[1]]
   if (Math.abs(diff[0]) < 2 && Math.abs(diff[1]) < 2) return tail
-  if (Math.abs(diff[0]) >= 2 && Math.abs(diff[1]) >= 2) throw Error('ub')
+  if (Math.abs(diff[0]) >= 2 && Math.abs(diff[1]) >= 2) {
+    return [head[0] - Math.sign(diff[0]), head[1] - Math.sign(diff[1])]
+  }
   if (Math.abs(diff[0]) >= 2) {
     return [head[0] - Math.sign(diff[0]), head[1]]
   }
@@ -39,9 +41,12 @@ const moveTail = (head: Coordinate, tail: Coordinate): Coordinate => {
   throw Error('ub')
 }
 
+const numTails = 9
+
 const solution = (input: string) => {
   let head: Coordinate = [0, 0]
-  let tail: Coordinate = [0, 0]
+  let tails: Coordinate[] = Array(numTails).fill([0, 0])
+  // console.log(tails)
   const steps = parseInput(input)
   // console.log(parseInput(input))
   const visited: Set<string> = new Set()
@@ -50,12 +55,21 @@ const solution = (input: string) => {
     range(count).map((it) => {
       // console.log(dir)
       head = moveHead(head, dir)
-      tail = moveTail(head, tail)
-      visited.add(coordToString(tail))
+      let lastTail = head
+      tails = tails.map((tail, idx) => {
+        // console.log(`move tail ${idx} ${tail} ${lastTail}`)
+        const movedTail = moveTail(lastTail, tail)
+        // console.log(`moved from ${tail} to ${movedTail}`)
+        lastTail = movedTail
+        return movedTail
+      })
+      // console.log(head, tails)
+      visited.add(coordToString(tails.at(-1) as Coordinate))
     })
   })
   return visited.size
 }
 
 console.log(solution(getDemoInput()))
+console.log(solution(getDemoInput(2)))
 console.log(solution(getInput()))
