@@ -7,6 +7,8 @@ export const compareNumber = (a: number, b: number) => a - b
 export const compareNumberDescending = (a: number, b: number) =>
   a > b ? -1 : 1
 
+export const range = (num: number) => [...Array(num)]
+
 const cwd = dirname(require.main?.filename || '')
 
 const readInputFile = (name: string) =>
