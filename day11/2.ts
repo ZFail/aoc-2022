@@ -5,6 +5,7 @@ import {
   range,
   compareNumber,
   compareNumberDescending,
+  primeFactors,
 } from '../utils'
 
 const parseMonkey = (input: string) => {
@@ -33,29 +34,43 @@ const parseMonkey = (input: string) => {
 
 const solution = (input: string) => {
   const monkeys = input.split('\n\n').map((it) => parseMonkey(it))
-  range(20).forEach(() => {
+  range(20).forEach((_, idx) => {
     for (const monkey of monkeys) {
       monkey.items.forEach((item) => {
         const ops = monkey.operation.ops.map((it) => (it === 'old' ? item : it))
         const worryLevel =
           monkey.operation.op === '*' ? ops[0] * ops[1] : ops[0] + ops[1]
-        const dividedWorryLevel = Math.floor(worryLevel / 3)
-        const divisible = dividedWorryLevel % monkey.divisible === 0 ? 1 : 0
+        const simplifiedWorryLevel = Array.from(
+          new Set(primeFactors(worryLevel))
+        ).reduce((a, b) => a * b, 1)
+        console.log(
+          worryLevel,
+          primeFactors(worryLevel),
+          Array.from(new Set(primeFactors(worryLevel))),
+          simplifiedWorryLevel
+        )
+        const divisible = worryLevel % monkey.divisible === 0 ? 1 : 0
         const throwTo = monkey.throwTo[divisible]
         // console.log(dividedWorryLevel, throwTo)
-        monkeys[throwTo].items.push(dividedWorryLevel)
+        monkeys[throwTo].items.push(
+          simplifiedWorryLevel > 23 ? simplifiedWorryLevel : worryLevel
+        )
         monkey.inspects += 1
       })
       monkey.items = []
     }
+    console.log(
+      idx + 1,
+      monkeys.map((it) => it.items)
+    )
   })
 
-  return monkeys
-    .map((it) => it.inspects)
-    .sort(compareNumberDescending)
-    .splice(0, 2)
-    .reduce((a, b) => a * b, 1)
+  return monkeys.map((it) => it.inspects)
+  // .sort(compareNumberDescending)
+  // .splice(0, 2)
+  // .reduce((a, b) => a * b, 1)
 }
 
 console.log(solution(getDemoInput()))
-console.log(solution(getInput()))
+// console.log(solution(getInput()))
+// console.log(primeFactors(19 * 6))
