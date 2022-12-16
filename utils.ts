@@ -7,7 +7,7 @@ export const compareNumber = (a: number, b: number) => a - b
 export const compareNumberDescending = (a: number, b: number) =>
   a > b ? -1 : 1
 
-export const range = (num: number) => [...Array(num)]
+export const range = (num: number) => [...Array(num).keys()]
 
 const cwd = dirname(require.main?.filename || '')
 
@@ -31,4 +31,12 @@ export function primeFactors(n: number) {
     }
   }
   return factors
+}
+
+export function zip<T extends unknown[][]>(
+  ...args: T
+): { [K in keyof T]: T[K] extends (infer V)[] ? V : never }[] {
+  const minLength = Math.min(...args.map((arr) => arr.length))
+  // @ts-expect-error This is too much for ts
+  return range(minLength).map((i) => args.map((arr) => arr[i]))
 }

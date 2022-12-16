@@ -34,43 +34,38 @@ const parseMonkey = (input: string) => {
 
 const solution = (input: string) => {
   const monkeys = input.split('\n\n').map((it) => parseMonkey(it))
-  range(20).forEach((_, idx) => {
-    for (const monkey of monkeys) {
+  const divisibles = monkeys.map((it) => it.divisible)
+  const newMonkeys = monkeys.map((it, idx) => ({
+    ...it,
+    items: it.items.map((item) => divisibles.map((div) => item % div)),
+  }))
+
+  range(10000).forEach(() => {
+    newMonkeys.forEach((monkey, monkeyIdx) => {
+      const getWorryLevel = (val: number) => {
+        const ops = monkey.operation.ops.map((it) => (it === 'old' ? val : it))
+        return monkey.operation.op === '*' ? ops[0] * ops[1] : ops[0] + ops[1]
+      }
+
       monkey.items.forEach((item) => {
-        const ops = monkey.operation.ops.map((it) => (it === 'old' ? item : it))
-        const worryLevel =
-          monkey.operation.op === '*' ? ops[0] * ops[1] : ops[0] + ops[1]
-        const simplifiedWorryLevel = Array.from(
-          new Set(primeFactors(worryLevel))
-        ).reduce((a, b) => a * b, 1)
-        console.log(
-          worryLevel,
-          primeFactors(worryLevel),
-          Array.from(new Set(primeFactors(worryLevel))),
-          simplifiedWorryLevel
+        const newItem = item.map(
+          (mod, idx) => getWorryLevel(mod) % divisibles[idx]
         )
-        const divisible = worryLevel % monkey.divisible === 0 ? 1 : 0
+        const divisible = newItem[monkeyIdx] === 0 ? 1 : 0
         const throwTo = monkey.throwTo[divisible]
-        // console.log(dividedWorryLevel, throwTo)
-        monkeys[throwTo].items.push(
-          simplifiedWorryLevel > 23 ? simplifiedWorryLevel : worryLevel
-        )
+        newMonkeys[throwTo].items.push(newItem)
         monkey.inspects += 1
       })
       monkey.items = []
-    }
-    console.log(
-      idx + 1,
-      monkeys.map((it) => it.items)
-    )
+    })
   })
 
-  return monkeys.map((it) => it.inspects)
-  // .sort(compareNumberDescending)
-  // .splice(0, 2)
-  // .reduce((a, b) => a * b, 1)
+  return newMonkeys
+    .map((it) => it.inspects)
+    .sort(compareNumberDescending)
+    .splice(0, 2)
+    .reduce((a, b) => a * b, 1)
 }
 
 console.log(solution(getDemoInput()))
-// console.log(solution(getInput()))
-// console.log(primeFactors(19 * 6))
+console.log(solution(getInput()))
