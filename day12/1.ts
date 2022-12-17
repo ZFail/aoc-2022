@@ -1,4 +1,4 @@
-import { getDemoInput, getInput, range } from '../utils'
+import { getDemoInput, getInput, range, notNull } from '../utils'
 
 type Coord = [col: number, row: number]
 
@@ -25,7 +25,6 @@ const solution = (input: string) => {
         coord: [row, col] as Coord,
       }))
   )
-  const heights = heights2d.flat()
   if (!start) throw new Error('ub')
   if (!end) throw new Error('ub')
   const size: Coord = [heights2d.length, heights2d[0].length]
@@ -42,9 +41,7 @@ const solution = (input: string) => {
       .filter((c) => c.every((v, idx) => v >= 0 && v < size[idx]))
       .map((c) => heights2d[c[0]][c[1]])
   }
-  function notNull<T>(val: T): val is NonNullable<T> {
-    return val != null
-  }
+
   while (lastFilledCells.length > 0) {
     lastFilledCells = lastFilledCells
       .map((cell) => {
@@ -59,6 +56,7 @@ const solution = (input: string) => {
       })
       .flat()
   }
+
   heights2d.forEach((row, rowIdx) => {
     row.forEach((cell) => {
       process.stdout.write(cell.height.toString().padStart(4, ' '))
@@ -70,12 +68,9 @@ const solution = (input: string) => {
     process.stdout.write('\n')
     process.stdout.write('\n')
   })
-  // process.stdout.write('\n')
-  // heights.forEach((cell, idx) => {
-  //   if (idx % size[1] === 0) process.stdout.write('\n')
-  //   process.stdout.write(cell.dist.toString().padStart(4, ' '))
-  // })
+
   return endCell.dist
 }
+
 console.log(solution(getDemoInput()))
 console.log(solution(getInput()))

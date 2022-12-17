@@ -40,3 +40,7 @@ export function zip<T extends unknown[][]>(
   // @ts-expect-error This is too much for ts
   return range(minLength).map((i) => args.map((arr) => arr[i]))
 }
+
+export function notNull<T>(val: T): val is NonNullable<T> {
+  return val != null
+}
