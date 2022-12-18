@@ -71,4 +71,4 @@ const solution = (input: string, row: number) => {
 //   if (solution(getInput(), i).length > 1) console.log(i)
 // }
 console.log(solution(getInput(), 2906101))
-console.log(solution(getInput(), 2906101)[0][1] * 4000000 + 2906101)
+console.log((solution(getInput(), 2906101)[0][1] + 1) * 4000000 + 2906101)
