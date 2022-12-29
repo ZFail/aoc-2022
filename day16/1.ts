@@ -58,23 +58,33 @@ const solution = (input: string) => {
   const startRoom = rooms.find((it) => it.name === 'AA')
 
   type State = {
-    currentRoom: Room
+    players: {
+      room: Room
+      time: number
+    }[]
     notVisited: Room[]
-    time: number
     released: number
     prevState?: State
   }
 
   let states: State[] = [
     {
-      currentRoom: startRoom,
+      players: [
+        {
+          room: startRoom,
+          time: 0,
+        },
+        {
+          room: startRoom,
+          time: 0,
+        },
+      ],
       notVisited: rooms.filter((it) => it.rate !== 0),
-      time: 0,
       released: 0,
     },
   ]
 
-  const endTime = 30
+  const endTime = 26
 
   const resultedStates: State[] = []
 
@@ -82,17 +92,24 @@ const solution = (input: string) => {
     states = states
       .map((state) => {
         const newStates: State[] = state.notVisited
-          .map((toRoom) => {
-            const time =
-              state.time + state.currentRoom.distances[toRoom.idx] + 1
+          .map((toRoom0) => state.notVisited.map(toRoom1 => {
+            const playerToRoom = [toRoom0, toRoom1]
+            const newPlayerStates = state.players.map((player, idx) => {
+              const toRoom = playerToRoom[idx]
+              const time = player.time + player.room.distances[toRoom.idx] + 1
+              return {
+                room: toRoom,
+                time,
+              }
+            })
             return {
-              currentRoom: toRoom,
-              notVisited: state.notVisited.filter((it) => it !== toRoom),
-              time,
+              players: newPlayerStates,
+              notVisited: state.notVisited.filter((it) => !newPlayerStates.map(it => it.room).includes(it)),
               released: state.released + (endTime - time) * toRoom.rate,
               prevState: state,
             } as State
-          })
+
+          }).flat()
           .filter((it) => it.time < endTime)
         if (newStates.length === 0) {
           resultedStates.push(state)
