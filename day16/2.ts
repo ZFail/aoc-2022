@@ -111,6 +111,8 @@ const solution = (input: string) => {
         )
       }
 
+      const newStatesAtStart = newStates.length
+
       if (state.players.length === 2 && state.notVisited.length >= 2) {
         for (const i of range(state.notVisited.length)) {
           for (const j of range(state.notVisited.length)) {
@@ -126,7 +128,7 @@ const solution = (input: string) => {
                 time: it.time,
               })),
               notVisited: state.notVisited.filter(
-                (it) => !newPlayerStep.map((it) => it.toRoom).includes(it)
+                (it) => !playerToRoom.includes(it)
               ),
               released:
                 state.released +
@@ -151,7 +153,7 @@ const solution = (input: string) => {
           })
         }
       }
-      if (newStates.length === 0) {
+      if (newStates.length === newStatesAtStart) {
         resultedStates.push(state)
       }
     })
