@@ -102,6 +102,7 @@ const solution = (input: string) => {
   }
 
   while (states.length > 0) {
+    console.log(`States count: ${states.length}`)
     states = states
       .map((state) => {
         const newStates: State[] = []
