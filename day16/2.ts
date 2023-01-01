@@ -103,55 +103,59 @@ const solution = (input: string) => {
 
   while (states.length > 0) {
     console.log(`States count: ${states.length}`)
-    states = states
-      .map((state) => {
-        const newStates: State[] = []
-        if (state.players.length === 2 && state.notVisited.length >= 2) {
-          for (const i of range(state.notVisited.length)) {
-            for (const j of range(state.notVisited.length)) {
-              if (i === j) continue
-              const playerToRoom = [state.notVisited[i], state.notVisited[j]]
-              const newPlayerStep = state.players.map((player, idx) =>
-                calcPlayerStep(playerToRoom[idx], player)
-              )
-              if (!newPlayerStep.every(notNull)) continue
-              newStates.push({
-                players: newPlayerStep.map((it) => ({
-                  currentRoom: it.toRoom,
-                  time: it.time,
-                })),
-                notVisited: state.notVisited.filter(
-                  (it) => !newPlayerStep.map((it) => it.toRoom).includes(it)
-                ),
-                released:
-                  state.released +
-                  newPlayerStep.map((it) => it.released).reduce(sum, 0),
-              })
-            }
-          }
-        }
-        for (const player of state.players) {
-          for (const toRoom of state.notVisited) {
-            const newPlayerStep = calcPlayerStep(toRoom, player)
-            if (!newPlayerStep) continue
+    const newStates: State[] = []
+    states.forEach((state, stateIdx) => {
+      if (stateIdx % 100000 === 0) {
+        console.log(
+          `Processing state: ${stateIdx}/${states.length}, new states: ${newStates.length}`
+        )
+      }
+
+      if (state.players.length === 2 && state.notVisited.length >= 2) {
+        for (const i of range(state.notVisited.length)) {
+          for (const j of range(state.notVisited.length)) {
+            if (i === j) continue
+            const playerToRoom = [state.notVisited[i], state.notVisited[j]]
+            const newPlayerStep = state.players.map((player, idx) =>
+              calcPlayerStep(playerToRoom[idx], player)
+            )
+            if (!newPlayerStep.every(notNull)) continue
             newStates.push({
-              players: [
-                {
-                  currentRoom: newPlayerStep.toRoom,
-                  time: newPlayerStep.time,
-                },
-              ],
-              notVisited: state.notVisited.filter((it) => it !== toRoom),
-              released: state.released + newPlayerStep.released,
+              players: newPlayerStep.map((it) => ({
+                currentRoom: it.toRoom,
+                time: it.time,
+              })),
+              notVisited: state.notVisited.filter(
+                (it) => !newPlayerStep.map((it) => it.toRoom).includes(it)
+              ),
+              released:
+                state.released +
+                newPlayerStep.map((it) => it.released).reduce(sum, 0),
             })
           }
         }
-        if (newStates.length === 0) {
-          resultedStates.push(state)
+      }
+      for (const player of state.players) {
+        for (const toRoom of state.notVisited) {
+          const newPlayerStep = calcPlayerStep(toRoom, player)
+          if (!newPlayerStep) continue
+          newStates.push({
+            players: [
+              {
+                currentRoom: newPlayerStep.toRoom,
+                time: newPlayerStep.time,
+              },
+            ],
+            notVisited: state.notVisited.filter((it) => it !== toRoom),
+            released: state.released + newPlayerStep.released,
+          })
         }
-        return newStates
-      })
-      .flat()
+      }
+      if (newStates.length === 0) {
+        resultedStates.push(state)
+      }
+    })
+    states = newStates
   }
 
   console.log(resultedStates.length)
