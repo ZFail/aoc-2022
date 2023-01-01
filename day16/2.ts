@@ -1,4 +1,4 @@
-import { getDemoInput, getInput } from '../utils'
+import { getDemoInput, getInput, notNull, range, sum } from '../utils'
 
 type Room = {
   idx: number
@@ -58,43 +58,93 @@ const solution = (input: string) => {
 
   const startRoom = rooms.find((it) => it.name === 'AA')
 
-  type State = {
+  type PlayerState = {
     currentRoom: Room
-    notVisited: Room[]
     time: number
+  }
+  type State = {
+    players: PlayerState[]
+    notVisited: Room[]
     released: number
     prevState?: State
   }
 
   let states: State[] = [
     {
-      currentRoom: startRoom,
+      players: [
+        {
+          currentRoom: startRoom,
+          time: 0,
+        },
+        {
+          currentRoom: startRoom,
+          time: 0,
+        },
+      ],
       notVisited: rooms.filter((it) => it.rate !== 0),
-      time: 0,
       released: 0,
     },
   ]
 
-  const endTime = 30
+  const endTime = 26
 
   const resultedStates: State[] = []
+
+  function calcPlayerStep(to: Room, playerState: PlayerState) {
+    const time =
+      playerState.time + playerState.currentRoom.distances[to.idx] + 1
+    if (time >= endTime) return null
+    return {
+      time,
+      released: (endTime - time) * to.rate,
+      toRoom: to,
+    }
+  }
 
   while (states.length > 0) {
     states = states
       .map((state) => {
-        const newStates: State[] = state.notVisited
-          .map((toRoom) => {
-            const time =
-              state.time + state.currentRoom.distances[toRoom.idx] + 1
-            return {
-              currentRoom: toRoom,
+        const newStates: State[] = []
+        if (state.players.length === 2 && state.notVisited.length >= 2) {
+          for (const i of range(state.notVisited.length)) {
+            for (const j of range(state.notVisited.length)) {
+              if (i === j) continue
+              const playerToRoom = [state.notVisited[i], state.notVisited[j]]
+              const newPlayerStep = state.players.map((player, idx) =>
+                calcPlayerStep(playerToRoom[idx], player)
+              )
+              if (!newPlayerStep.every(notNull)) continue
+              newStates.push({
+                players: newPlayerStep.map((it) => ({
+                  currentRoom: it.toRoom,
+                  time: it.time,
+                })),
+                notVisited: state.notVisited.filter(
+                  (it) => !newPlayerStep.map((it) => it.toRoom).includes(it)
+                ),
+                released:
+                  state.released +
+                  newPlayerStep.map((it) => it.released).reduce(sum, 0),
+              })
+            }
+          }
+        }
+        for (const player of state.players) {
+          for (const toRoom of state.notVisited) {
+            const newPlayerStep = calcPlayerStep(toRoom, player)
+            if (!newPlayerStep) continue
+            newStates.push({
+              players: [
+                {
+                  currentRoom: newPlayerStep.toRoom,
+                  time: newPlayerStep.time,
+                },
+              ],
               notVisited: state.notVisited.filter((it) => it !== toRoom),
-              time,
-              released: state.released + (endTime - time) * toRoom.rate,
-              prevState: state,
-            } as State
-          })
-          .filter((it) => it.time < endTime)
+              released: state.released + newPlayerStep.released,
+            })
+          }
+        }
         if (newStates.length === 0) {
           resultedStates.push(state)
         }
@@ -105,23 +155,6 @@ const solution = (input: string) => {
 
   console.log(resultedStates.length)
 
-  // rooms.forEach((_, i) => {
-  //   rooms.forEach((_, j) => {
-  //     const a = rooms[i].tunnelNames.includes(rooms[j].name) ? 1 : 0
-  //     rooms[i].tunnelsArr[j] = a
-  //     // rooms[i].distances[j] = distance(rooms[i], rooms[j])
-  //   })
-  // })
-  // rooms.forEach((it) => {
-  //   console.log(it.tunnelsArr.join(','))
-  // })
-  // console.log('')
-  // rooms.forEach((it) => {
-  //   console.log(it.distances.join(','))
-  // })
-  // rooms.forEach((it) => {
-  //   console.log(it.name, it.rate === 0 ? '' : it.rate)
-  // })
   return resultedStates.sort((a, b) => a.released - b.released).pop().released
 }
 
