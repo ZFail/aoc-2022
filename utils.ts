@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { dirname, join } from 'path'
 
 export const sum = (a: number, b: number) => a + b
+export const min = (a: number, b: number) => Math.min(a, b)
 export const max = (a: number, b: number) => Math.max(a, b)
 export const compareNumber = (a: number, b: number) => a - b
 export const compareNumberDescending = (a: number, b: number) =>
