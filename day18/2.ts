@@ -23,13 +23,13 @@ const solution = (input: string) => {
         >
     )
   )
-  function haveLavaAt(pos: Coord) {
-    if (!pos.every((it, idx) => it >= minCoord[idx])) return false
-    if (!pos.every((it, idx) => it <= maxCoord[idx])) return false
-    return field[pos[0]][pos[1]][pos[2]] === 'lava'
+  function getFieldAt(pos: Coord) {
+    if (!pos.every((it, idx) => it >= minCoord[idx])) return 'water'
+    if (!pos.every((it, idx) => it <= maxCoord[idx])) return 'water'
+    return field[pos[0]][pos[1]][pos[2]]
   }
   function calcAreaAt(pos: Coord) {
-    return haveLavaAt(pos) ? 0 : 1
+    return getFieldAt(pos) === 'water' ? 1 : 0
   }
   function calcCubeArea(pos: Coord) {
     return (
@@ -82,4 +82,4 @@ const solution = (input: string) => {
 }
 
 console.log(solution(getDemoInput()))
-// console.log(solution(getInput()))
+console.log(solution(getInput()))
