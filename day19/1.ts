@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs'
-import { getDemoInput, getInput, max, range } from '../utils'
+import { getDemoInput, getInput, max, range, sum } from '../utils'
 
 type Resources = {
   ore: number
@@ -54,7 +54,7 @@ const solution = (input: string) => {
 
   const types = ['ore', 'clay', 'obsidian', 'geode'] as const
   const rtypes = ['ore', 'clay', 'obsidian'] as const
-  type Types = typeof types[number]
+  type Types = (typeof types)[number]
 
   function produceRobot(
     robotType: Types,
@@ -76,74 +76,73 @@ const solution = (input: string) => {
     ) as Resources
   }
 
-  let states: State[] = [
-    {
-      robots: {
-        ore: 1,
-        clay: 0,
-        obsidian: 0,
-        geode: 0,
+  const results = blueprints.map((blueprint, blueprintIdx) => {
+    if (blueprintIdx !== 1) return 0
+    console.time(`calc${blueprintIdx}`)
+    let states: State[] = [
+      {
+        robots: {
+          ore: 1,
+          clay: 0,
+          obsidian: 0,
+          geode: 0,
+        },
+        resources: {
+          ore: 0,
+          clay: 0,
+          obsidian: 0,
+          geode: 0,
+        },
       },
-      resources: {
-        ore: 0,
-        clay: 0,
-        obsidian: 0,
-        geode: 0,
-      },
-    },
-  ]
+    ]
 
-  let stateHashes: Set<String> = new Set()
+    let stateHashes: Set<String> = new Set()
+    let robotStates: Record<string, State[]> = {}
 
-  const maxCost = {
-    ore: types.map((t) => blueprints[0][t].ore).reduce(max, 0),
-    clay: types.map((t) => blueprints[0][t].clay).reduce(max, 0),
-    obsidian: types.map((t) => blueprints[0][t].obsidian).reduce(max, 0),
-  }
+    function addState(state: State) {
+      // if (rtypes.every((t) => state.resources[t] > maxCost[t] * 2)) return
+      const robotsHash = Object.values(state.robots).join(' ')
+      const hash = robotsHash + ' ' + Object.values(state.resources).join(' ')
+      if (stateHashes.has(hash)) return
+      states.push(state)
+      stateHashes.add(hash)
+    }
 
-  function addState(state: State) {
-    // if (rtypes.every((t) => state.resources[t] > maxCost[t] * 2)) return
-    const hash = JSON.stringify([
-      ...Object.values(state.robots),
-      ...Object.values(state.resources),
-    ])
-    if (stateHashes.has(hash)) return
-    states.push(state)
-    stateHashes.add(hash)
-  }
-
-  console.time('calc')
-  range(24).forEach(() => {
-    const oldStates = states
-    states = []
-    stateHashes.clear()
-    oldStates.forEach((state) => {
-      addState({
-        robots: { ...state.robots },
-        resources: collectResources(state.resources, state.robots),
-      })
-      types.forEach((t) => {
-        const resourcesAfterRobotProduce = produceRobot(
-          t,
-          state.resources,
-          blueprints[0]
-        )
-        if (!resourcesAfterRobotProduce) return
-        let newRobots: Robots = { ...state.robots }
-        newRobots[t] = state.robots[t] + 1
+    range(15).forEach(() => {
+      const oldStates = states
+      states = []
+      stateHashes.clear()
+      oldStates.forEach((state) => {
         addState({
-          robots: newRobots,
-          resources: collectResources(resourcesAfterRobotProduce, state.robots),
+          robots: { ...state.robots },
+          resources: collectResources(state.resources, state.robots),
+        })
+        types.forEach((t) => {
+          const resourcesAfterRobotProduce = produceRobot(
+            t,
+            state.resources,
+            blueprint
+          )
+          if (!resourcesAfterRobotProduce) return
+          let newRobots: Robots = { ...state.robots }
+          newRobots[t] = state.robots[t] + 1
+          addState({
+            robots: newRobots,
+            resources: collectResources(
+              resourcesAfterRobotProduce,
+              state.robots
+            ),
+          })
         })
       })
     })
+    console.timeEnd(`calc${blueprintIdx}`)
+    console.log(states.length)
+
+    return states.map((it) => it.resources.geode).reduce(max, 0)
   })
-  console.timeEnd('calc')
 
-  console.log(states.length)
-  console.log(states.map((it) => it.resources.geode).reduce(max, 0))
-
-  return blueprints
+  return results
 }
 
 console.log(solution(getDemoInput()))
