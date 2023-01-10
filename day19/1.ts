@@ -53,6 +53,7 @@ const solution = (input: string) => {
   }
 
   const types = ['ore', 'clay', 'obsidian', 'geode'] as const
+  const reverseTypes = [...types].reverse()
   const rtypes = ['ore', 'clay', 'obsidian'] as const
   type Types = (typeof types)[number]
 
@@ -77,7 +78,7 @@ const solution = (input: string) => {
   }
 
   const results = blueprints.map((blueprint, blueprintIdx) => {
-    if (blueprintIdx !== 1) return 0
+    // if (blueprintIdx !== 1) return 0
     console.time(`calc${blueprintIdx}`)
     let states: State[] = [
       {
@@ -106,24 +107,28 @@ const solution = (input: string) => {
       if (stateHashes.has(hash)) return
       states.push(state)
       stateHashes.add(hash)
+      const robotStatesArr =
+        robotStates[robotsHash] ?? (robotStates[robotsHash] = [])
+      robotStatesArr.push(state)
     }
 
-    range(15).forEach(() => {
+    range(24).forEach((minute) => {
       const oldStates = states
       states = []
       stateHashes.clear()
+      robotStates = {}
       oldStates.forEach((state) => {
         addState({
           robots: { ...state.robots },
           resources: collectResources(state.resources, state.robots),
         })
-        types.forEach((t) => {
+        for (const t of reverseTypes) {
           const resourcesAfterRobotProduce = produceRobot(
             t,
             state.resources,
             blueprint
           )
-          if (!resourcesAfterRobotProduce) return
+          if (!resourcesAfterRobotProduce) continue
           let newRobots: Robots = { ...state.robots }
           newRobots[t] = state.robots[t] + 1
           addState({
@@ -133,17 +138,33 @@ const solution = (input: string) => {
               state.robots
             ),
           })
-        })
+        }
       })
+      const filteredStates = Object.entries(robotStates)
+        .map(([key, value]) => {
+          const newValues = value.filter((it) => {
+            return !value.some((v) =>
+              types.every((t) => v.resources[t] >= it.resources[t] && v !== it)
+            )
+          })
+          return newValues
+        })
+        .flat()
+      console.log(minute, states.length, filteredStates.length)
+      states = filteredStates
+      // writeFileSync('a.json', JSON.stringify(filteredStates, undefined, 2))
     })
     console.timeEnd(`calc${blueprintIdx}`)
-    console.log(states.length)
-
-    return states.map((it) => it.resources.geode).reduce(max, 0)
+    const maxGeodes = states.map((it) => it.resources.geode).reduce(max, 0)
+    console.log(states.length, maxGeodes)
+    // writeFileSync('a.json', JSON.stringify(states, undefined, 2))
+    // writeFileSync('b.json', JSON.stringify(robotStates2, undefined, 2))
+    return maxGeodes * (blueprintIdx + 1)
   })
 
-  return results
+  console.log(results)
+  return results.reduce(sum, 0)
 }
 
-console.log(solution(getDemoInput()))
-// console.log(solution(getInput()))
+// console.log(solution(getDemoInput()))
+console.log(solution(getInput()))
