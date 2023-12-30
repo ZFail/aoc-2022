@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["ESNext"],
-    "target": "ESNext"
+    "target": "ESNext",
+    "allowSyntheticDefaultImports": true
   }
 }
